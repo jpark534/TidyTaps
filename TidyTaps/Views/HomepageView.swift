@@ -8,80 +8,109 @@
 import SwiftUI
 
 struct HomepageView: View {
-    // In a real app this might come from your data model
+    // the deleted count in red bubble. for now its test number
     @State private var deletedCount: Int = 18
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 40) {
-                
-                // MARK: Logo Header
-                HStack(spacing: 8) {
-                    Text("Tidy")
-                        .font(.largeTitle).fontWeight(.semibold)
-                    // replace "hand.tap" with custom asset name if needed
-                    Image("logo")
-                        .imageScale(.large)
-                    Text("Taps")
-                        .font(.largeTitle).fontWeight(.semibold)
-                }
-                .foregroundColor(.primary)
+            ZStack {
+                Color("Background")
+                    .ignoresSafeArea()
+                VStack(spacing: 40) {
+                    Spacer(minLength: 80)
+                    // MARK: Logo Header
+                    HStack(alignment: .center, spacing: 0) {
+                      
+                      // 1) "T i d y" with big tracking
+                      Text("Tidy")
+                        .font(.custom("Poppins-Semibold", size: 49))
+                        .tracking(14)          // adds 20pts between every letter
+                        .foregroundColor(.primary)
 
-                Spacer()
+                      // 2) Your logo, rotated/offset to lean into the "aps"
+                      Image("logo")            // or Image(systemName: "hand.tap.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 87, height: 87)
+                        .rotationEffect(.degrees(10))   // tilt it toward the right
+                        .offset(x: 2, y:-5)                  // pull it left so it overlaps slightly
 
-                // MARK: Buttons
-                VStack(spacing: 20) {
-                    
-                    // Start
-                    NavigationLink(destination: /* Your StartView() */ Text("Start screen")) {
-                        Text("Start")
+                      // 3) "a p s" with the same tracking
+                      Text("aps")
+                        .font(.custom("Poppins-Semibold", size: 50))
+                        .tracking(12)
+                        .foregroundColor(.primary)
                     }
-                    .buttonStyle(
-                        CapsuleButtonStyle(
-                            fill: Color("AccentLight"),    // define in Assets.xcassets
-                            stroke: Color("AccentDark")
-                        )
-                    )
-
-                    // Deleted + Badge
-                    ZStack(alignment: .topTrailing) {
-                        NavigationLink(destination: /* Your DeletedView() */ Text("Deleted screen")) {
-                            Text("Deleted")
+                    .foregroundColor(.primary)
+                    
+                    Spacer()
+                    
+                    // MARK: Buttons
+                    VStack(spacing: 20) {
+                        
+                        // Start
+                        NavigationLink(destination: /* Your StartView() */ Text("Start screen")) {
+                            Text("Start")
+                                .font(.custom("Poppins-Medium", size: 23))
+                                .fontWeight(.semibold)
+                                .tracking(1)
                         }
                         .buttonStyle(
                             CapsuleButtonStyle(
-                                fill: .clear,
-                                stroke: Color("AccentDark")
+                                fill: Color("Yellow"),
+                                stroke: Color("AccentDark"),
+                                lineWidth: 4
                             )
                         )
-
-                        if deletedCount > 0 {
-                            Text("\(deletedCount)")
-                                .font(.caption2)
-                                .foregroundColor(.white)
-                                .padding(6)
-                                .background(Circle().foregroundColor(.red))
-                                .offset(x: 12, y: -12)
+                        
+                        // Deleted + Badge
+                        ZStack(alignment: .topTrailing) {
+                            NavigationLink(destination: /* Your DeletedView() */ Text("Deleted screen")) {
+                                Text("Deleted")
+                                    .font(.custom("Poppins-Medium", size: 23))
+                                    .fontWeight(.semibold)
+                                    .tracking(1)
+                            }
+                            .buttonStyle(
+                                CapsuleButtonStyle(
+                                    fill: Color("AccentLight"),
+                                    stroke: Color("AccentDark"),
+                                    lineWidth: 4
+                                )
+                            )
+                            
+                            if deletedCount > 0 {
+                                Text("\(deletedCount)")
+                                    .font(.custom("Poppins-Medium", size: 18)).fontWeight(.semibold)
+                                
+                                    .foregroundColor(.white)
+                                    .padding(5)
+                                    .background(Circle().foregroundColor(.red))
+                                    .offset(x: 7, y: -10)
+                            }
                         }
-                    }
-
-                    // Settings
-                    NavigationLink(destination: /* Your SettingsView() */ Text("Settings screen")) {
-                        Text("Settings")
-                    }
-                    .buttonStyle(
-                        CapsuleButtonStyle(
-                            fill: .clear,
-                            stroke: Color("AccentDark")
+                        
+                        // Settings
+                        NavigationLink(destination: /* Your SettingsView() */ Text("Settings screen")) {
+                            Text("Settings")
+                                .font(.custom("Poppins-Medium", size: 23))
+                                .fontWeight(.semibold)
+                                .tracking(1)
+                        }
+                        
+                        .buttonStyle(
+                            CapsuleButtonStyle(
+                                fill: Color("AccentLight"),
+                                stroke: Color("AccentDark"),
+                                lineWidth: 4
+                            )
                         )
-                    )
+                    }
+                    
+                    Spacer()
                 }
-
-                Spacer()
+                .padding(.horizontal, 32)
             }
-            .padding()
-            .background(Color("Background")) // define your light green here
-            .edgesIgnoringSafeArea(.all)
             .navigationBarHidden(true)
         }
     }
