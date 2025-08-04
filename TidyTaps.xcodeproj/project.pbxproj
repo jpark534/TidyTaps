@@ -24,9 +24,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		3FFFFC992E3F10AD001CFC33 /* TidyTaps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TidyTaps.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		3FFFFCA62E3F10B0001CFC33 /* TidyTapsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TidyTapsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		3FFFFCB02E3F10B0001CFC33 /* TidyTapsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TidyTapsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3FD9DAC02E40581200E05112 /* TidyTaps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TidyTaps.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3FD9DAC12E40581200E05112 /* TidyTapsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TidyTapsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3FD9DAC22E40581200E05112 /* TidyTapsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TidyTapsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -78,18 +78,10 @@
 				3FFFFC9B2E3F10AD001CFC33 /* TidyTaps */,
 				3FFFFCA92E3F10B0001CFC33 /* TidyTapsTests */,
 				3FFFFCB32E3F10B0001CFC33 /* TidyTapsUITests */,
-				3FFFFC9A2E3F10AD001CFC33 /* Products */,
+				3FD9DAC02E40581200E05112 /* TidyTaps.app */,
+				3FD9DAC12E40581200E05112 /* TidyTapsTests.xctest */,
+				3FD9DAC22E40581200E05112 /* TidyTapsUITests.xctest */,
 			);
-			sourceTree = "<group>";
-		};
-		3FFFFC9A2E3F10AD001CFC33 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				3FFFFC992E3F10AD001CFC33 /* TidyTaps.app */,
-				3FFFFCA62E3F10B0001CFC33 /* TidyTapsTests.xctest */,
-				3FFFFCB02E3F10B0001CFC33 /* TidyTapsUITests.xctest */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -114,7 +106,7 @@
 			packageProductDependencies = (
 			);
 			productName = TidyTaps;
-			productReference = 3FFFFC992E3F10AD001CFC33 /* TidyTaps.app */;
+			productReference = 3FD9DAC02E40581200E05112 /* TidyTaps.app */;
 			productType = "com.apple.product-type.application";
 		};
 		3FFFFCA52E3F10B0001CFC33 /* TidyTapsTests */ = {
@@ -137,7 +129,7 @@
 			packageProductDependencies = (
 			);
 			productName = TidyTapsTests;
-			productReference = 3FFFFCA62E3F10B0001CFC33 /* TidyTapsTests.xctest */;
+			productReference = 3FD9DAC12E40581200E05112 /* TidyTapsTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		3FFFFCAF2E3F10B0001CFC33 /* TidyTapsUITests */ = {
@@ -160,7 +152,7 @@
 			packageProductDependencies = (
 			);
 			productName = TidyTapsUITests;
-			productReference = 3FFFFCB02E3F10B0001CFC33 /* TidyTapsUITests.xctest */;
+			productReference = 3FD9DAC22E40581200E05112 /* TidyTapsUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -196,7 +188,7 @@
 			mainGroup = 3FFFFC902E3F10AD001CFC33;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 3FFFFC9A2E3F10AD001CFC33 /* Products */;
+			productRefGroup = 3FFFFC902E3F10AD001CFC33;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
