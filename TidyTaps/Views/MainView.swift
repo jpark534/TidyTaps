@@ -87,7 +87,7 @@ struct MainView: View {
                             vm.apply(.deleted)
                         }
                         if vm.remaining > 0 {
-                            Text("\(vm.remaining)")
+                            Text("\(vm.deletedCount)")
                                 .font(.caption2)
                                 .foregroundColor(.white)
                                 .padding(6)
@@ -118,6 +118,7 @@ final class MainViewModel: ObservableObject {
 
     @Published var assets: [PHAsset] = []
     @Published var index: Int = 0
+    @Published var deletedCount: Int = 0 //deleted count starting at 0
 
     private var lastActions: [(asset: PHAsset, action: Action, indexBefore: Int)] = []
 
@@ -142,6 +143,7 @@ final class MainViewModel: ObservableObject {
             self.assets = list
             self.index = 0
             self.lastActions.removeAll()
+            self.deletedCount = 0 //resetting when loading another month
         }
     }
 
@@ -155,6 +157,7 @@ final class MainViewModel: ObservableObject {
             PhotoLibraryService.add(asset: asset, toAlbumTitled: "Liked Folder - TidyTap")
         case .deleted:
             PhotoLibraryService.add(asset: asset, toAlbumTitled: "Deleted Folder - TidyTap")
+            deletedCount += 1   //increment delete icon count when pressed
         case .kept:
             break
         }
@@ -172,6 +175,7 @@ final class MainViewModel: ObservableObject {
             PhotoLibraryService.remove(asset: last.asset, fromAlbumTitled: "Liked Folder - TidyTap")
         case .deleted:
             PhotoLibraryService.remove(asset: last.asset, fromAlbumTitled: "Deleted Folder - TidyTap")
+            deletedCount = max(0, deletedCount - 1) //when undo, minus da number
         case .kept:
             break
         }
