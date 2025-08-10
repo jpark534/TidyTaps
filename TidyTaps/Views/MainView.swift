@@ -17,13 +17,6 @@ struct MainView: View {
             VStack(spacing: 12) {
                 // Top bar
                 HStack {
-                    Button {
-                        presentationMode.wrappedValue.dismiss()
-                    } label: {
-                        Image(systemName: "house.fill")
-                            .font(.system(size: 22))
-                            .foregroundColor(.primary)
-                    }
                     Spacer()
                     Text(monthLabel)
                         .font(.custom("Poppins-Semibold", size: 20))
@@ -96,10 +89,6 @@ struct MainView: View {
                         }
                     }
 
-                    // Like (to Liked album)
-                    RoundIcon("heart.circle.fill") {
-                        vm.apply(.liked)
-                    }
                 }
                 .padding(.bottom, 12)
             }
@@ -114,7 +103,7 @@ struct MainView: View {
 // MARK: - ViewModel
 
 final class MainViewModel: ObservableObject {
-    enum Action { case liked, deleted, kept }
+    enum Action { case deleted, kept }
 
     @Published var assets: [PHAsset] = []
     @Published var index: Int = 0
@@ -129,6 +118,11 @@ final class MainViewModel: ObservableObject {
     // Load assets that fall inside the given month
     func load(monthLabel: String) {
         let interval = DateInterval.forMonthLabel(monthLabel)
+
+        // HIDE only deleted
+        let deletedIDs = PhotoLibraryService.assetIDs(inAlbumTitled: AppAlbum.deleted)
+        let hidden = deletedIDs
+
         let opts = PHFetchOptions()
         opts.predicate = NSPredicate(format: "mediaType == %d AND creationDate >= %@ AND creationDate < %@",
                                      PHAssetMediaType.image.rawValue, interval.start as NSDate, interval.end as NSDate)
@@ -136,54 +130,55 @@ final class MainViewModel: ObservableObject {
 
         let result = PHAsset.fetchAssets(with: opts)
         var list: [PHAsset] = []
-        list.reserveCapacity(result.count)
-        result.enumerateObjects { asset, _, _ in list.append(asset) }
+        result.enumerateObjects { asset, _, _ in
+            if !hidden.contains(asset.localIdentifier) { list.append(asset) }  // keep checked visible
+        }
 
         DispatchQueue.main.async {
             self.assets = list
             self.index = 0
             self.lastActions.removeAll()
-            self.deletedCount = 0 //resetting when loading another month
+            self.deletedCount = 0
         }
     }
 
+
+
     func apply(_ action: Action) {
         guard let asset = currentAsset else { return }
-        // record for undo
         lastActions.append((asset, action, index))
 
         switch action {
-        case .liked:
-            PhotoLibraryService.add(asset: asset, toAlbumTitled: "Liked Folder - TidyTap")
+            // (asset leaves this month pile because your MainView/MonthsView filter deletes)
         case .deleted:
-            PhotoLibraryService.add(asset: asset, toAlbumTitled: "Deleted Folder - TidyTap")
-            deletedCount += 1   //increment delete icon count when pressed
+            PhotoLibraryService.add(asset: asset, toAlbumTitled: AppAlbum.deleted)
+            deletedCount += 1
         case .kept:
-            break
+            PhotoLibraryService.add(asset: asset, toAlbumTitled: AppAlbum.checked) // ← track “checked”
         }
 
-        // remove from the pile
+        // remove from current array so the next photo shows
         assets.remove(at: index)
         if index >= assets.count { index = max(0, assets.count - 1) }
     }
 
     func undo() {
         guard let last = lastActions.popLast() else { return }
-        // remove from album if needed
+
         switch last.action {
-        case .liked:
-            PhotoLibraryService.remove(asset: last.asset, fromAlbumTitled: "Liked Folder - TidyTap")
         case .deleted:
-            PhotoLibraryService.remove(asset: last.asset, fromAlbumTitled: "Deleted Folder - TidyTap")
-            deletedCount = max(0, deletedCount - 1) //when undo, minus da number
+            PhotoLibraryService.remove(asset: last.asset, fromAlbumTitled: AppAlbum.deleted)
+            deletedCount = max(0, deletedCount - 1)
         case .kept:
-            break
+            PhotoLibraryService.remove(asset: last.asset, fromAlbumTitled: AppAlbum.checked) // ← undo “checked”
         }
-        // reinsert at the spot it was
+
         let insertAt = min(last.indexBefore, assets.count)
         assets.insert(last.asset, at: insertAt)
         index = insertAt
     }
+
+
 }
 
 // MARK: - Photo Helpers
@@ -229,11 +224,19 @@ struct AssetImageView: View {
 
 import Photos
 
+// Centralize the album titles so we don't typo them
+enum AppAlbum {
+    static let deleted  = "Deleted Folder - TidyTap"
+    static let checked  = "Checked Folder - TidyTap"
+}
+
+
+
 enum PhotoLibraryService {
 
-    // Find/orcreate an album by title
+    // Find (or lazily create) an album by title
     private static func album(titled title: String) -> PHAssetCollection? {
-        // 1) Try to find an existing album with this title
+        // 1) Try to find an existing album
         let fetch = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumRegular, options: nil)
         var existing: PHAssetCollection?
         fetch.enumerateObjects { coll, _, stop in
@@ -244,7 +247,7 @@ enum PhotoLibraryService {
         }
         if let existing { return existing }
 
-        // 2) Not found → then create it
+        // 2) Not found → create it
         var placeholder: PHObjectPlaceholder?
         do {
             try PHPhotoLibrary.shared().performChangesAndWait {
@@ -261,6 +264,7 @@ enum PhotoLibraryService {
         return created.firstObject
     }
 
+    // Add a single asset to an album
     static func add(asset: PHAsset, toAlbumTitled title: String) {
         guard let collection = album(titled: title) else { return }
         PHPhotoLibrary.shared().performChanges({
@@ -268,13 +272,29 @@ enum PhotoLibraryService {
         }, completionHandler: nil)
     }
 
+    // Remove a single asset from an album
     static func remove(asset: PHAsset, fromAlbumTitled title: String) {
         guard let collection = album(titled: title) else { return }
         PHPhotoLibrary.shared().performChanges({
             PHAssetCollectionChangeRequest(for: collection)?.removeAssets([asset] as NSArray)
         }, completionHandler: nil)
     }
+
+    // Get the set of asset localIdentifiers that live in an album (used to filter "reviewed")
+    static func assetIDs(inAlbumTitled title: String) -> Set<String> {
+        guard let collection = album(titled: title) else { return [] }
+        let res = PHAsset.fetchAssets(in: collection, options: nil)
+        var ids: Set<String> = []
+        res.enumerateObjects { asset, _, _ in ids.insert(asset.localIdentifier) }
+        return ids
+    }
+    
+//    static func assetCount(inAlbumTitled title: String) -> Int {
+//        guard let coll = album(titled: title) else { return 0 }
+//        return PHAsset.fetchAssets(in: coll, options: nil).count
+//    }
 }
+
 
 
 // MARK: - UI Bits
