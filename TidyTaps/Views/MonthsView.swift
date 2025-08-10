@@ -24,6 +24,7 @@ struct MonthsView: View {
                     Text("Tidy taps")
                         .font(.custom("Poppins-Semibold", size: 34))
                         .tracking(10)
+                        .foregroundColor(.black)
                     Spacer()
                 }
                 .padding([.horizontal, .top], 16)
@@ -35,12 +36,14 @@ struct MonthsView: View {
                             VStack(spacing: 6) {
                                 Text(group.label.uppercased())
                                     .font(.custom("Poppins-Medium", size: 24))
+                                    .foregroundColor(.black)
 
-                                // optional: show progress (remaining = total - acted)
+                                // show progress (remaining = total - acted)
                                 let remaining = group.total - group.acted
                                 Text(remaining == 0 ? "All set" : "\(remaining) to sort")
                                     .font(.custom("Poppins-Regular", size: 14))
                                     .opacity(0.7)
+                                    .foregroundColor(.black)
                             }
                             .frame(height: 140)
                             .frame(maxWidth: .infinity)

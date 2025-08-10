@@ -56,6 +56,7 @@ struct MainView: View {
                     Spacer()
                     Text(monthLabel)
                         .font(.custom("Poppins-Semibold", size: 20))
+                        .foregroundColor(.black)
                     Spacer().frame(width: 22) //
                 }
                 .padding(.horizontal, 16)
@@ -94,6 +95,7 @@ struct MainView: View {
                         .clipShape(Capsule())
                         .overlay(Capsule().stroke(Color("AccentDark"), lineWidth: 1))
                         .padding(.bottom, 4)
+                        .foregroundColor(.black)
                 }
 
                 // Action row

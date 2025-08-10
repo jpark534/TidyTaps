@@ -27,7 +27,8 @@ struct HomepageView: View {
                       Text("Tidy")
                         .font(.custom("Poppins-Semibold", size: 45))
                         .tracking(14)          // adds 20pts between every letter
-                        .foregroundColor(.primary)
+                        .foregroundColor(.black)
+                        //.foregroundStyle(.black)
 
                       // 2) Your logo, rotated/offset to lean into the "aps"
                       Image("logo")            // or Image(systemName: "hand.tap.fill")
@@ -41,9 +42,9 @@ struct HomepageView: View {
                       Text("aps")
                         .font(.custom("Poppins-Semibold", size: 45))
                         .tracking(12)
-                        .foregroundColor(.primary)
+                        .foregroundColor(.black)
                     }
-                    .foregroundColor(.primary)
+                    .foregroundColor(.black)
                     
                     Spacer()
                     
@@ -56,6 +57,7 @@ struct HomepageView: View {
                                 .font(.custom("Poppins-Medium", size: 23))
                                 .fontWeight(.semibold)
                                 .tracking(1)
+                                .foregroundColor(.black)
                         }
                         .buttonStyle(
                             CapsuleButtonStyle(
@@ -72,6 +74,7 @@ struct HomepageView: View {
                                     .font(.custom("Poppins-Medium", size: 23))
                                     .fontWeight(.semibold)
                                     .tracking(1)
+                                    .foregroundColor(.black)
                             }
                             .buttonStyle(
                                 CapsuleButtonStyle(
@@ -98,6 +101,7 @@ struct HomepageView: View {
                                 .font(.custom("Poppins-Medium", size: 23))
                                 .fontWeight(.semibold)
                                 .tracking(1)
+                                .foregroundColor(.black)
                         }
                         
                         .buttonStyle(
