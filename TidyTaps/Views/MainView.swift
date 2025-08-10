@@ -1,6 +1,37 @@
 import SwiftUI
 import Photos
 
+
+// MARK: - Settings Page
+//settings (4 different orders of action button) *REMINDER* to go thru comments bc im so tired proper english not working
+
+
+enum ActionButtonKind: String, CaseIterable, Hashable {
+    case keep, delete, undo
+}
+
+enum ActionButtonOrder: Int, CaseIterable, Identifiable {
+    case check_x_undo = 0
+    case undo_x_check = 1
+    case x_undo_check = 2
+    case check_undo_x = 3
+
+    var id: Int { rawValue }
+
+    var kinds: [ActionButtonKind] {
+        switch self {
+        case .check_x_undo: return [.keep, .delete, .undo]
+        case .undo_x_check: return [.undo, .delete, .keep]
+        case .x_undo_check: return [.delete, .undo, .keep]
+        case .check_undo_x: return [.keep, .undo, .delete]
+        }
+    }
+
+    static var `default`: ActionButtonOrder { .undo_x_check }
+}
+
+
+
 // MARK: - Main Page
 
 struct MainView: View {
@@ -9,6 +40,11 @@ struct MainView: View {
 
     @StateObject private var vm = MainViewModel()
     @Environment(\.presentationMode) private var presentationMode
+    @AppStorage("actionOrder") private var actionOrderRaw: Int = ActionButtonOrder.default.rawValue
+    private var selectedOrder: ActionButtonOrder {
+        ActionButtonOrder(rawValue: actionOrderRaw) ?? .default
+    }
+
 
     var body: some View {
         ZStack {
@@ -20,7 +56,7 @@ struct MainView: View {
                     Spacer()
                     Text(monthLabel)
                         .font(.custom("Poppins-Semibold", size: 20))
-                    Spacer().frame(width: 22) // home icon. ts is def not where I want it to be but its an estimate
+                    Spacer().frame(width: 22) //
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
@@ -61,42 +97,46 @@ struct MainView: View {
                 }
 
                 // Action row
+                // Actions (dynamic order)
                 HStack(spacing: 24) {
-                    // Undo
-                    RoundIcon("arrow.uturn.backward.circle.fill") {
-                        vm.undo()
+                    ForEach(selectedOrder.kinds, id: \.self) { kind in
+                        actionButton(kind)
                     }
-                    .opacity(vm.canUndo ? 1 : 0.4)
-                    .disabled(!vm.canUndo)
-
-                    // Keep
-                    RoundIcon("checkmark.circle.fill") {
-                        vm.apply(.kept)
-                    }
-
-                    // Delete (to Deleted album)
-                    ZStack(alignment: .topTrailing) {
-                        RoundIcon("xmark.circle.fill") {
-                            vm.apply(.deleted)
-                        }
-                        if vm.remaining > 0 {
-                            Text("\(vm.deletedCount)")
-                                .font(.caption2)
-                                .foregroundColor(.white)
-                                .padding(6)
-                                .background(Circle())
-                                .offset(x: 10, y: -10)
-                        }
-                    }
-
                 }
                 .padding(.bottom, 12)
+
             }
         }
         .onAppear {
             vm.load(monthLabel: monthLabel)
         }
     }
+    @ViewBuilder
+    private func actionButton(_ kind: ActionButtonKind) -> some View {
+        switch kind {
+        case .undo:
+            RoundIcon("arrow.uturn.backward.circle.fill") { vm.undo() }
+                .opacity(vm.canUndo ? 1 : 0.4)
+                .disabled(!vm.canUndo)
+
+        case .delete:
+            ZStack(alignment: .topTrailing) {
+                RoundIcon("xmark.circle.fill") { vm.apply(.deleted) }
+                if vm.deletedCount > 0 {
+                    Text("\(vm.deletedCount)")
+                        .font(.caption2)
+                        .foregroundColor(.white)
+                        .padding(6)
+                        .background(Circle())
+                        .offset(x: 10, y: -10)
+                }
+            }
+
+        case .keep:
+            RoundIcon("checkmark.circle.fill") { vm.apply(.kept) }
+        }
+    }
+
 }
 
 
