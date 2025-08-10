@@ -10,7 +10,7 @@ import SwiftUI
 struct HomepageView: View {
     // the deleted count in red bubble. for now its test number
     @State private var deletedCount: Int = 18
-    let yourMonthsArray = ["Mar 2025","Feb 2025","Jan 2025","…"]
+    
 
     var body: some View {
         NavigationView {
@@ -50,7 +50,7 @@ struct HomepageView: View {
                     VStack(spacing: 20) {
                         
                         // Start
-                        NavigationLink(destination: MonthsView(months: yourMonthsArray)) {
+                        NavigationLink(destination: MonthsView()) {
                             Text("Start")
                                 .font(.custom("Poppins-Medium", size: 23))
                                 .fontWeight(.semibold)
