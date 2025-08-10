@@ -29,9 +29,22 @@
 		3FD9DAC22E40581200E05112 /* TidyTapsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TidyTapsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3F8E426B2E48691A00FA14AF /* Exceptions for "TidyTaps" folder in "TidyTaps" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 3FFFFC982E3F10AD001CFC33 /* TidyTaps */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		3FFFFC9B2E3F10AD001CFC33 /* TidyTaps */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3F8E426B2E48691A00FA14AF /* Exceptions for "TidyTaps" folder in "TidyTaps" target */,
+			);
 			path = TidyTaps;
 			sourceTree = "<group>";
 		};
@@ -392,6 +405,7 @@
 				DEVELOPMENT_TEAM = XVXA4894BZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TidyTaps/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -420,6 +434,7 @@
 				DEVELOPMENT_TEAM = XVXA4894BZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TidyTaps/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
