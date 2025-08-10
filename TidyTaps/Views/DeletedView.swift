@@ -26,11 +26,7 @@ struct DeletedView: View {
             VStack(spacing: 0) {
                 // Top bar
                 HStack {
-                    Button { presentationMode.wrappedValue.dismiss() } label: {
-                        Image(systemName: "house.fill")
-                            .font(.system(size: 22))
-                            .foregroundColor(.primary)
-                    }
+                    
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, minHeight: 44)          // the bar
@@ -144,7 +140,8 @@ final class DeletedViewModel: ObservableObject {
     }
 
     func undo(_ asset: PHAsset) {
-        remove(asset: asset, fromAlbum: albumTitle) { [weak self] in
+        remove(asset: asset, fromAlbum: AppAlbum.deleted) { [weak self] in
+            PhotoLibraryService.remove(asset: asset, fromAlbumTitled: AppAlbum.checked) // ← add this
             guard let self else { return }
             DispatchQueue.main.async {
                 self.assets.removeAll { $0.localIdentifier == asset.localIdentifier }
@@ -152,6 +149,7 @@ final class DeletedViewModel: ObservableObject {
             }
         }
     }
+
 
     func permanentlyDeleteAll() {
         let arr = assets as NSArray
