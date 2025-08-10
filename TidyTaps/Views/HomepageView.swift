@@ -24,7 +24,7 @@ struct HomepageView: View {
                       
                       // 1) "T i d y" with big tracking
                       Text("Tidy")
-                        .font(.custom("Poppins-Semibold", size: 49))
+                        .font(.custom("Poppins-Semibold", size: 45))
                         .tracking(14)          // adds 20pts between every letter
                         .foregroundColor(.primary)
 
@@ -38,7 +38,7 @@ struct HomepageView: View {
 
                       // 3) "a p s" with the same tracking
                       Text("aps")
-                        .font(.custom("Poppins-Semibold", size: 50))
+                        .font(.custom("Poppins-Semibold", size: 45))
                         .tracking(12)
                         .foregroundColor(.primary)
                     }
@@ -66,7 +66,7 @@ struct HomepageView: View {
                         
                         // Deleted + Badge
                         ZStack(alignment: .topTrailing) {
-                            NavigationLink(destination: /* Your DeletedView() */ Text("Deleted screen")) {
+                            NavigationLink(destination: DeletedView())  {
                                 Text("Deleted")
                                     .font(.custom("Poppins-Medium", size: 23))
                                     .fontWeight(.semibold)
