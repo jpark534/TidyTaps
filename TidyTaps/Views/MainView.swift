@@ -37,6 +37,7 @@ struct MainView: View {
                     Group {
                         if let asset = vm.currentAsset {
                             AssetImageView(asset: asset)
+                                .id(asset.localIdentifier)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                                 .clipped()
                                 .padding(.horizontal, 18)
@@ -189,25 +190,38 @@ struct AssetImageView: View {
 
     var body: some View {
         Group {
-            if let img { Image(uiImage: img).resizable().scaledToFit() }
-            else { ProgressView() }
-        }
-        .onAppear {
-            let opts = PHImageRequestOptions()
-            opts.deliveryMode = .highQualityFormat
-            opts.isSynchronous = false
-            let size = UIScreen.main.bounds.size
-            PHImageManager.default().requestImage(
-                for: asset,
-                targetSize: CGSize(width: size.width * 2, height: size.height * 2),
-                contentMode: .aspectFit,
-                options: opts
-            ) { image, _ in
-                self.img = image
+            if let img {
+                Image(uiImage: img)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                ProgressView()
             }
+        }
+        .onAppear(perform: loadImage)
+        .onChange(of: asset.localIdentifier) { _, _ in
+                    img = nil
+                    loadImage()
+                }
+    }
+
+    private func loadImage() {
+        let opts = PHImageRequestOptions()
+        opts.deliveryMode = .highQualityFormat
+        opts.isSynchronous = false
+
+        let size = UIScreen.main.bounds.size
+        PHImageManager.default().requestImage(
+            for: asset,
+            targetSize: CGSize(width: size.width * 2, height: size.height * 2),
+            contentMode: .aspectFit,
+            options: opts
+        ) { image, _ in
+            DispatchQueue.main.async { self.img = image }
         }
     }
 }
+
 
 import Photos
 
