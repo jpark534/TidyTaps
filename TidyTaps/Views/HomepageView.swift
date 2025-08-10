@@ -9,7 +9,8 @@ import SwiftUI
 
 struct HomepageView: View {
     // the deleted count in red bubble. for now its test number
-    @State private var deletedCount: Int = 18
+//    @StateObject private var deletedBadge = DeletedBadgeVM()
+
     
 
     var body: some View {
@@ -80,15 +81,15 @@ struct HomepageView: View {
                                 )
                             )
                             
-                            if deletedCount > 0 {
-                                Text("\(deletedCount)")
-                                    .font(.custom("Poppins-Medium", size: 18)).fontWeight(.semibold)
-                                
-                                    .foregroundColor(.white)
-                                    .padding(5)
-                                    .background(Circle().foregroundColor(.red))
-                                    .offset(x: 7, y: -10)
-                            }
+//                            if deletedCount > 0 {
+//                                Text("\(deletedCount)")
+//                                    .font(.custom("Poppins-Medium", size: 18)).fontWeight(.semibold)
+//                                
+//                                    .foregroundColor(.white)
+//                                    .padding(5)
+//                                    .background(Circle().foregroundColor(.red))
+//                                    .offset(x: 7, y: -10)
+//                            }
                         }
                         
                         // Settings
