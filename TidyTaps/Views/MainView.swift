@@ -209,19 +209,35 @@ struct AssetImageView: View {
     }
 }
 
-enum PhotoLibraryService {
-    // find (or lazily create) album by title
-    private static func album(titled title: String) -> PHAssetCollection? {
-        let opts = PHFetchOptions()
-        opts.predicate = NSPredicate(format: "localizedTitle == %@", title)
-        let collections = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumRegular, options: opts)
-        if let found = collections.firstObject { return found }
+import Photos
 
-        var placeholder: PHObjectPlaceholder?
-        PHPhotoLibrary.shared().performChangesAndWait {
-            let req = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title)
-            placeholder = req.placeholderForCreatedAssetCollection
+enum PhotoLibraryService {
+
+    // Find/orcreate an album by title
+    private static func album(titled title: String) -> PHAssetCollection? {
+        // 1) Try to find an existing album with this title
+        let fetch = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumRegular, options: nil)
+        var existing: PHAssetCollection?
+        fetch.enumerateObjects { coll, _, stop in
+            if coll.localizedTitle == title {
+                existing = coll
+                stop.pointee = true
+            }
         }
+        if let existing { return existing }
+
+        // 2) Not found → then create it
+        var placeholder: PHObjectPlaceholder?
+        do {
+            try PHPhotoLibrary.shared().performChangesAndWait {
+                let req = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title)
+                placeholder = req.placeholderForCreatedAssetCollection
+            }
+        } catch {
+            print("Failed to create album '\(title)': \(error)")
+            return nil
+        }
+
         guard let ph = placeholder else { return nil }
         let created = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [ph.localIdentifier], options: nil)
         return created.firstObject
@@ -241,6 +257,7 @@ enum PhotoLibraryService {
         }, completionHandler: nil)
     }
 }
+
 
 // MARK: - UI Bits
 
