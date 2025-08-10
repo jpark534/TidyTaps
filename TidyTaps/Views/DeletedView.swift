@@ -14,8 +14,10 @@ struct DeletedView: View {
 
     @State private var showConfirm = false
 
-    private let cols = [GridItem(.flexible(), spacing: 12),
-                        GridItem(.flexible(), spacing: 12)]
+    private let cols = [
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16)
+    ]
 
     var body: some View {
         ZStack {
@@ -43,37 +45,40 @@ struct DeletedView: View {
 
 
                 // Grid
+                
+                
                 ScrollView {
-                    LazyVGrid(columns: cols, spacing: 12) {
+                    LazyVGrid(columns: cols, spacing: 16) {
                         ForEach(vm.assets, id: \.localIdentifier) { asset in
-                            ZStack {
-                                DeletedThumb(asset: asset)
-                                    .aspectRatio(1, contentMode: .fill)
-                                    .frame(height: 120)
-                                    .clipped()
-                                    .onTapGesture {
-                                        vm.selected = asset.localIdentifier
-                                    }
+                            let isSelected = vm.selected == asset.localIdentifier
 
-                                if vm.selected == asset.localIdentifier {
-                                    Rectangle()
-                                        .fill(.ultraThinMaterial)
-                                        .frame(height: 120)
-                                    Button {
-                                        vm.undo(asset)
-                                    } label: {
-                                        Image(systemName: "arrow.uturn.backward.circle.fill")
-                                            .font(.system(size: 28))
-                                            .padding(10)
-                                            .background(Circle().fill(Color("Yellow")))
-                                            .overlay(Circle().stroke(Color("AccentDark"), lineWidth: 2))
+                            DeletedThumb(asset: asset)                // ⇦ auto-sizes by aspect
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                                .overlay {
+                                    if isSelected {
+                                        RoundedRectangle(cornerRadius: 14)
+                                            .fill(.ultraThinMaterial) // full-tile blur
                                     }
                                 }
-                            }
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .overlay(alignment: .center) {
+                                    if isSelected {
+                                        Button { vm.undo(asset) } label: {
+                                            Image(systemName: "arrow.uturn.backward.circle.fill")
+                                                .font(.system(size: 28))
+                                                .padding(10)
+                                                .background(Circle().fill(Color("Yellow")))
+                                                .overlay(Circle().stroke(Color("AccentDark"), lineWidth: 2))
+                                        }
+                                    }
+                                }
+                                .contentShape(RoundedRectangle(cornerRadius: 14)) // tap area = tile
+                                .onTapGesture { vm.selected = asset.localIdentifier }
                         }
                     }
-                    .padding(16)
+                    .padding(.horizontal, 16)   // side margins
+                    .padding(.top, 8)
+                    .padding(.bottom, 24)
+
 
                     // Bottom action
                     if !vm.assets.isEmpty {
@@ -187,24 +192,43 @@ private struct DeletedThumb: View {
     let asset: PHAsset
     @State private var image: UIImage?
 
+    private var aspect: CGFloat {
+        let w = max(1, CGFloat(asset.pixelWidth))
+        let h = max(1, CGFloat(asset.pixelHeight))
+        return w / h                           // width / height
+    }
+
     var body: some View {
-        Group {
+        ZStack {
+            // reserve space using the true aspect ratio
+            Color.clear
+                .aspectRatio(aspect, contentMode: .fit)
+                .background(Color.gray.opacity(0.08))
+
             if let image {
-                Image(uiImage: image).resizable().scaledToFill()
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()             // show the whole photo
             } else {
-                Rectangle().fill(.gray.opacity(0.2))
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .task(id: asset.localIdentifier) {
-            let size = CGSize(width: 300, height: 300)
             let opts = PHImageRequestOptions()
-            opts.deliveryMode = .opportunistic
+            opts.deliveryMode = .highQualityFormat
+            // pick a reasonable target size for the column width (~300px wide)
+            let targetWidth: CGFloat = 600
+            let targetSize = CGSize(width: targetWidth, height: targetWidth / aspect)
             PHImageManager.default().requestImage(
                 for: asset,
-                targetSize: size,
-                contentMode: .aspectFill,
+                targetSize: targetSize,
+                contentMode: .aspectFit,
                 options: opts
-            ) { img, _ in self.image = img }
+            ) { img, _ in
+                self.image = img
+            }
         }
     }
 }
+
