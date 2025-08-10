@@ -1,216 +1,280 @@
-//
-//  MainView.swift
-//  TidyTaps
-//
-//  Created by Julia Park on 2025-08-04.
-//
 import SwiftUI
 import Photos
 
+// MARK: - Main Page
+
 struct MainView: View {
-    // injected when you push from MonthsView:
-    let monthYear: String
+    /// like "Mar 2025" passed from MonthsView
+    let monthLabel: String
 
-    // the list of assets for that month
-    @State private var assets: [PHAsset] = []
-    @State private var currentIndex: Int = 0
-
-    // stack of undone actions so Undo can restore
-    private enum Action { case liked, deleted, kept }
-    @State private var undoStack: [(asset: PHAsset, action: Action)] = []
-
-    // to pop back home
+    @StateObject private var vm = MainViewModel()
     @Environment(\.presentationMode) private var presentationMode
 
     var body: some View {
-        VStack {
-            //  ─── Top Bar ─────────────────────
-            HStack {
-                Button {
-                    presentationMode.wrappedValue.dismiss()
-                } label: {
-                    Image(systemName: "house.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.primary)
+        ZStack {
+            Color("Background").ignoresSafeArea()
+
+            VStack(spacing: 12) {
+                // Top bar
+                HStack {
+                    Button {
+                        presentationMode.wrappedValue.dismiss()
+                    } label: {
+                        Image(systemName: "house.fill")
+                            .font(.system(size: 22))
+                            .foregroundColor(.primary)
+                    }
+                    Spacer()
+                    Text(monthLabel)
+                        .font(.custom("Poppins-Semibold", size: 20))
+                    Spacer().frame(width: 22) // home icon. ts is def not where I want it to be but its an estimate
                 }
-
-                Spacer()
-
-                Text(monthYear)
-                    .font(.custom("Poppins-Semibold", size: 20))
-            }
-            .padding()
-
-            //  ─── Photo Display ───────────────
-            GeometryReader { geo in
-                if let asset = assets[safe: currentIndex] {
-                    PhotoView(asset: asset)
-                        .frame(width: geo.size.width,
-                               height: geo.size.height * 0.6)
-                } else {
-                    Text("No more photos")
-                        .font(.title2)
-                }
-            }
-
-            //  ─── Counter ─────────────────────
-            Text("\(currentIndex+1) of \(assets.count)")
-                .padding(.vertical, 8)
                 .padding(.horizontal, 16)
-                .background(Color.white.opacity(0.8))
-                .cornerRadius(20)
+                .padding(.top, 8)
 
-            //  ─── Action Buttons ─────────────
-            HStack(spacing: 24) {
-                // Undo
-                Button {
-                    undoLastAction()
-                } label: {
-                    Image(systemName: "arrow.uturn.backward.circle.fill")
-                        .font(.system(size: 36))
+                // Photo zonee
+                GeometryReader { geo in
+                    Group {
+                        if let asset = vm.currentAsset {
+                            AssetImageView(asset: asset)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .clipped()
+                                .padding(.horizontal, 18)
+                                .padding(.top, 8)
+                        } else {
+                            VStack(spacing: 10) {
+                                Text("All done")
+                                    .font(.custom("Poppins-Semibold", size: 22))
+                                Text("No more photos in this month.")
+                                    .font(.custom("Poppins-Regular", size: 16))
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                    }
+                }
+                .frame(height: 420) // photo height
+
+                // Counter thingy
+                if vm.remaining > 0 {
+                    Text("\(vm.remaining)")               // <— remaining photos in the pile
+                        .font(.custom("Poppins-Medium", size: 16))
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 14)
+                        .background(.white.opacity(0.9))
+                        .clipShape(Capsule())
+                        .overlay(Capsule().stroke(Color("AccentDark"), lineWidth: 1))
+                        .padding(.bottom, 4)
                 }
 
-                // Like
-                Button {
-                    applyAction(.liked)
-                } label: {
-                    Image(systemName: "heart.fill")
-                        .font(.system(size: 36))
-                }
+                // Action row
+                HStack(spacing: 24) {
+                    // Undo
+                    RoundIcon("arrow.uturn.backward.circle.fill") {
+                        vm.undo()
+                    }
+                    .opacity(vm.canUndo ? 1 : 0.4)
+                    .disabled(!vm.canUndo)
 
-                // Delete
-                Button {
-                    applyAction(.deleted)
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 36))
-                }
+                    // Keep
+                    RoundIcon("checkmark.circle.fill") {
+                        vm.apply(.kept)
+                    }
 
-                // Keep
-                Button {
-                    applyAction(.kept)
-                } label: {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 36))
+                    // Delete (to Deleted album)
+                    ZStack(alignment: .topTrailing) {
+                        RoundIcon("xmark.circle.fill") {
+                            vm.apply(.deleted)
+                        }
+                        if vm.remaining > 0 {
+                            Text("\(vm.remaining)")
+                                .font(.caption2)
+                                .foregroundColor(.white)
+                                .padding(6)
+                                .background(Circle())
+                                .offset(x: 10, y: -10)
+                        }
+                    }
+
+                    // Like (to Liked album)
+                    RoundIcon("heart.circle.fill") {
+                        vm.apply(.liked)
+                    }
                 }
+                .padding(.bottom, 12)
             }
-            .padding(.bottom)
         }
-        .onAppear(perform: loadAssets)
-        .background(Color("Background").ignoresSafeArea())
+        .onAppear {
+            vm.load(monthLabel: monthLabel)
+        }
+    }
+}
+
+
+// MARK: - ViewModel
+
+final class MainViewModel: ObservableObject {
+    enum Action { case liked, deleted, kept }
+
+    @Published var assets: [PHAsset] = []
+    @Published var index: Int = 0
+
+    private var lastActions: [(asset: PHAsset, action: Action, indexBefore: Int)] = []
+
+    var currentAsset: PHAsset? { assets.indices.contains(index) ? assets[index] : nil }
+    var remaining: Int { assets.count }             // shows total left in the pile
+    var canUndo: Bool { !lastActions.isEmpty }
+
+    // Load assets that fall inside the given month
+    func load(monthLabel: String) {
+        let interval = DateInterval.forMonthLabel(monthLabel)
+        let opts = PHFetchOptions()
+        opts.predicate = NSPredicate(format: "mediaType == %d AND creationDate >= %@ AND creationDate < %@",
+                                     PHAssetMediaType.image.rawValue, interval.start as NSDate, interval.end as NSDate)
+        opts.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
+
+        let result = PHAsset.fetchAssets(with: opts)
+        var list: [PHAsset] = []
+        list.reserveCapacity(result.count)
+        result.enumerateObjects { asset, _, _ in list.append(asset) }
+
+        DispatchQueue.main.async {
+            self.assets = list
+            self.index = 0
+            self.lastActions.removeAll()
+        }
     }
 
-    // MARK: Helpers ────────────────────────────────────
-
-    private func loadAssets() {
-        // fetch assets from the photo library whose creation date matches monthYear
-        // e.g. parse monthYear into DateInterval then use PHFetchOptions
-        // for simplicity, here’s a stub:
-        let fetchOptions = PHFetchOptions()
-        // configure fetchOptions.predicate to match monthYear...
-        let result = PHAsset.fetchAssets(with: .image, options: fetchOptions)
-        assets = (0..<result.count).compactMap { result.object(at: $0) }
-    }
-
-    private func applyAction(_ action: Action) {
-        guard let asset = assets[safe: currentIndex] else { return }
-
-        // record it so we can undo
-        undoStack.append((asset: asset, action: action))
+    func apply(_ action: Action) {
+        guard let asset = currentAsset else { return }
+        // record for undo
+        lastActions.append((asset, action, index))
 
         switch action {
         case .liked:
-            addAsset(asset, toAlbum: "Liked Folder - TidyTap")
+            PhotoLibraryService.add(asset: asset, toAlbumTitled: "Liked Folder - TidyTap")
         case .deleted:
-            addAsset(asset, toAlbum: "Deleted Folder - TidyTaps")
+            PhotoLibraryService.add(asset: asset, toAlbumTitled: "Deleted Folder - TidyTap")
         case .kept:
             break
         }
 
-        // remove from our array and advance
-        assets.remove(at: currentIndex)
-        if currentIndex >= assets.count {
-            currentIndex = max(0, assets.count - 1)
-        }
+        // remove from the pile
+        assets.remove(at: index)
+        if index >= assets.count { index = max(0, assets.count - 1) }
     }
 
-    private func undoLastAction() {
-        guard let last = undoStack.popLast() else { return }
-        let (asset, action) = last
-
-        // remove from the album if we had added it
-        if action != .kept {
-            removeAsset(asset, fromAlbum: action == .liked
-                        ? "Liked Folder - TidyTap"
-                        : "Deleted Folder - TidyTaps")
+    func undo() {
+        guard let last = lastActions.popLast() else { return }
+        // remove from album if needed
+        switch last.action {
+        case .liked:
+            PhotoLibraryService.remove(asset: last.asset, fromAlbumTitled: "Liked Folder - TidyTap")
+        case .deleted:
+            PhotoLibraryService.remove(asset: last.asset, fromAlbumTitled: "Deleted Folder - TidyTap")
+        case .kept:
+            break
         }
-
-        // re-insert asset at its prior index
-        assets.insert(asset, at: currentIndex)
-    }
-
-    private func addAsset(_ asset: PHAsset, toAlbum title: String) {
-        PHPhotoLibrary.shared().performChanges {
-            guard let collection =
-               PHAssetCollection.fetchAssetCollections(
-                 with: .album, subtype: .any,
-                 options: PHFetchOptions()
-               ).firstObject(where: { $0.localizedTitle == title }),
-                  let req = PHAssetCollectionChangeRequest(for: collection)
-            else { return }
-            req.addAssets([asset] as NSArray)
-        }
-    }
-
-    private func removeAsset(_ asset: PHAsset, fromAlbum title: String) {
-        PHPhotoLibrary.shared().performChanges {
-            guard let collection =
-               PHAssetCollection.fetchAssetCollections(
-                 with: .album, subtype: .any,
-                 options: PHFetchOptions()
-               ).firstObject(where: { $0.localizedTitle == title }),
-                  let req = PHAssetCollectionChangeRequest(for: collection)
-            else { return }
-            req.removeAssets([asset] as NSArray)
-        }
+        // reinsert at the spot it was
+        let insertAt = min(last.indexBefore, assets.count)
+        assets.insert(last.asset, at: insertAt)
+        index = insertAt
     }
 }
 
-// A small helper view to render a PHAsset as an Image
-struct PhotoView: View {
+// MARK: - Photo Helpers
+
+struct AssetImageView: View {
     let asset: PHAsset
-    @State private var uiImage: UIImage?
+    @State private var img: UIImage?
 
     var body: some View {
         Group {
-            if let img = uiImage {
-                Image(uiImage: img)
-                  .resizable()
-                  .scaledToFit()
-            } else {
-                ProgressView()
-            }
+            if let img { Image(uiImage: img).resizable().scaledToFit() }
+            else { ProgressView() }
         }
         .onAppear {
-            let options = PHImageRequestOptions()
-            options.deliveryMode = .highQualityFormat
-            PHImageManager.default()
-              .requestImage(
+            let opts = PHImageRequestOptions()
+            opts.deliveryMode = .highQualityFormat
+            opts.isSynchronous = false
+            let size = UIScreen.main.bounds.size
+            PHImageManager.default().requestImage(
                 for: asset,
-                targetSize: UIScreen.main.bounds.size,
+                targetSize: CGSize(width: size.width * 2, height: size.height * 2),
                 contentMode: .aspectFit,
-                options: options
-              ) { img, _ in
-                self.uiImage = img
-              }
+                options: opts
+            ) { image, _ in
+                self.img = image
+            }
         }
     }
 }
 
-// Array safe index
-extension Array {
-    subscript (safe i: Index) -> Element? {
-        indices.contains(i) ? self[i] : nil
+enum PhotoLibraryService {
+    // find (or lazily create) album by title
+    private static func album(titled title: String) -> PHAssetCollection? {
+        let opts = PHFetchOptions()
+        opts.predicate = NSPredicate(format: "localizedTitle == %@", title)
+        let collections = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumRegular, options: opts)
+        if let found = collections.firstObject { return found }
+
+        var placeholder: PHObjectPlaceholder?
+        PHPhotoLibrary.shared().performChangesAndWait {
+            let req = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title)
+            placeholder = req.placeholderForCreatedAssetCollection
+        }
+        guard let ph = placeholder else { return nil }
+        let created = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [ph.localIdentifier], options: nil)
+        return created.firstObject
+    }
+
+    static func add(asset: PHAsset, toAlbumTitled title: String) {
+        guard let collection = album(titled: title) else { return }
+        PHPhotoLibrary.shared().performChanges({
+            PHAssetCollectionChangeRequest(for: collection)?.addAssets([asset] as NSArray)
+        }, completionHandler: nil)
+    }
+
+    static func remove(asset: PHAsset, fromAlbumTitled title: String) {
+        guard let collection = album(titled: title) else { return }
+        PHPhotoLibrary.shared().performChanges({
+            PHAssetCollectionChangeRequest(for: collection)?.removeAssets([asset] as NSArray)
+        }, completionHandler: nil)
     }
 }
 
+// MARK: - UI Bits
+
+private func RoundIcon(_ systemName: String, action: @escaping () -> Void) -> some View {
+    Button(action: action) {
+        Image(systemName: systemName)
+            .font(.system(size: 34))
+            .frame(width: 66, height: 66)
+            .background(
+                Circle().fill(Color("LightGreen").opacity(0.9))
+            )
+            .overlay(
+                Circle().stroke(Color("AccentDark"), lineWidth: 2)
+            )
+            .foregroundColor(.primary)
+    }
+}
+
+// MARK: - Utilities
+
+extension DateInterval {
+    /// Accepts "Mar 2025", "FEB 2025" ca[ital
+    static func forMonthLabel(_ label: String) -> DateInterval {
+        let fmt = DateFormatter()
+        fmt.locale = Locale(identifier: "en_US_POSIX")
+        fmt.dateFormat = "MMM yyyy"
+
+        // exact but change uppercase
+        let monthStart = fmt.date(from: label) ?? fmt.date(from: label.uppercased()) ?? Date()
+
+        var comps = Calendar.current.dateComponents([.year, .month], from: monthStart)
+        comps.day = 1
+        let start = Calendar.current.date(from: comps) ?? monthStart
+        let end = Calendar.current.date(byAdding: .month, value: 1, to: start) ?? start.addingTimeInterval(30*24*3600)
+        return DateInterval(start: start, end: end)
+    }
+}
