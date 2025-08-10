@@ -11,7 +11,7 @@ import SwiftUI
 struct TidyTapsApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HomepageView()  //starting point
         }
     }
 }
