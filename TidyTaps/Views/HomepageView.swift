@@ -93,7 +93,7 @@ struct HomepageView: View {
                         }
                         
                         // Settings
-                        NavigationLink(destination: /* Your SettingsView() */ Text("Settings screen")) {
+                        NavigationLink(destination:SettingsView()) {
                             Text("Settings")
                                 .font(.custom("Poppins-Medium", size: 23))
                                 .fontWeight(.semibold)
