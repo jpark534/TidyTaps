@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct MonthsView: View {
-    // this comes from your data source: only months with photos
+    // from data source
     let months: [String]
     
 
-    // to pop back to HomepageView
+    // going back to da homepage
     @Environment(\.presentationMode) private var presentationMode
 
     private let colors = [
@@ -20,7 +20,7 @@ struct MonthsView: View {
         Color("LightGreen")
     ]
 
-    // two flexible columns
+    // 2 column
     private let columns = [
         GridItem(.flexible(), spacing: 24),
         GridItem(.flexible(), spacing: 24)
@@ -53,7 +53,7 @@ struct MonthsView: View {
                 // Grid of month-year buttons
                 LazyVGrid(columns: columns, spacing: 24) {
                     ForEach(Array(months.enumerated()), id: \.element) { idx, monthYear in
-                        NavigationLink(destination: PhotoGridView(month: monthYear)) {
+                        NavigationLink(destination: MainView(monthLabel: monthYear)) {
                             Text(monthYear.uppercased())
                                 .font(.custom("Poppins-Medium", size: 28))
                                 .frame(height: 140)
@@ -84,7 +84,7 @@ struct MonthsView: View {
     }
 }
 
-// dummy placeholder for your photo‐grid screen
+//  placeholder for your photo‐grid screen
 struct PhotoGridView: View {
     let month: String
     var body: some View {
