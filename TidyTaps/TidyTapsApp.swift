@@ -34,18 +34,20 @@ struct TidyTapsApp: App {
 
 // Create the two albums if missing(liked n deleted)
 private func createTidyTapAlbums() {
-    let titles = ["Liked Folder - TidyTap", "Deleted Folder - TidyTap"]
-    PHPhotoLibrary.shared().performChanges({
+    let titles = [
+       // "Deleted Folder - TidyTap",
+        "Checked Folder - TidyTap"
+    ]
+    PHPhotoLibrary.shared().performChanges {
         for title in titles {
             let opts = PHFetchOptions()
             opts.predicate = NSPredicate(format: "localizedTitle == %@", title)
-            let existing = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumRegular, options: opts)
-            if existing.firstObject == nil {
+            let res = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumRegular, options: opts)
+            if res.firstObject == nil {
                 PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title)
             }
         }
-    }, completionHandler: { success, error in
-        if !success, let error { print("Album setup failed:", error) }
-    })
+    }
 }
+
 
