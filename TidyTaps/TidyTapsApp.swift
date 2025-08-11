@@ -10,27 +10,15 @@ import Photos
 
 @main
 struct TidyTapsApp: App {
-
-    init() {
-        // Ask photos access at launch
-        PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
-            switch status {
-            case .authorized, .limited:
-                // OK w access
-                createTidyTapAlbums()
-            default:
-                // denied - showing nice msg later
-                break
+    var body: some Scene {
+        WindowGroup {
+            PhotoPermissionGate {
+                HomepageView()
             }
         }
     }
-
-    var body: some Scene {
-        WindowGroup {
-            HomepageView()
-        }
-    }
 }
+
 
 // Create the two albums if missing(liked n deleted)
 private func createTidyTapAlbums() {
