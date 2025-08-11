@@ -4,7 +4,7 @@
 //
 //  Created by Julia Park on 2025-08-10.
 //
-//
+//**    MAYBE FOR FUTURE SCOPE WILL KEEP THIS HERE. ITS CUZ IT KEPT CRASHING SO I GAVE UP **
 //import Foundation
 //import Photos
 //import Combine
