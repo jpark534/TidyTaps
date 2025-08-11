@@ -68,7 +68,7 @@ struct MonthsView: View {
         }
         .background(Color("Background"))
         .ignoresSafeArea(edges: .bottom)
-        .onAppear { vm.load() }     // ← fetch real months
+        .onAppear { vm.load() }     // fetch real months
     }
 
     private func colorForCell(at idx: Int) -> Color {

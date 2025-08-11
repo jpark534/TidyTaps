@@ -3,7 +3,7 @@ import Photos
 
 
 // MARK: - Settings Page
-//settings (4 different orders of action button) *REMINDER* to go thru comments bc im so tired proper english not working
+//settings (4 different orders of action button)
 
 
 enum ActionButtonKind: String, CaseIterable, Hashable {
@@ -35,7 +35,7 @@ enum ActionButtonOrder: Int, CaseIterable, Identifiable {
 // MARK: - Main Page
 
 struct MainView: View {
-    /// like "Mar 2025" passed from MonthsView
+    /// passed from MonthsVIew
     let monthLabel: String
 
     @StateObject private var vm = MainViewModel()
@@ -87,7 +87,7 @@ struct MainView: View {
 
                 // Counter thingy
                 if vm.remaining > 0 {
-                    Text("\(vm.remaining)")               // <— remaining photos in the pile
+                    Text("\(vm.remaining)")               // the remaining photos in the pile
                         .font(.custom("Poppins-Medium", size: 16))
                         .padding(.vertical, 6)
                         .padding(.horizontal, 14)
@@ -131,6 +131,7 @@ struct MainView: View {
                         .padding(6)
                         .background(Circle())
                         .offset(x: 10, y: -10)
+                        .foregroundColor(.black)
                 }
             }
 
@@ -196,7 +197,7 @@ final class MainViewModel: ObservableObject {
             PhotoLibraryService.add(asset: asset, toAlbumTitled: AppAlbum.deleted)
             deletedCount += 1
         case .kept:
-            PhotoLibraryService.add(asset: asset, toAlbumTitled: AppAlbum.checked) // ← track “checked”
+            PhotoLibraryService.add(asset: asset, toAlbumTitled: AppAlbum.checked) //  track “checked” photos
         }
 
         // remove from current array so the next photo shows
@@ -212,7 +213,7 @@ final class MainViewModel: ObservableObject {
             PhotoLibraryService.remove(asset: last.asset, fromAlbumTitled: AppAlbum.deleted)
             deletedCount = max(0, deletedCount - 1)
         case .kept:
-            PhotoLibraryService.remove(asset: last.asset, fromAlbumTitled: AppAlbum.checked) // ← undo “checked”
+            PhotoLibraryService.remove(asset: last.asset, fromAlbumTitled: AppAlbum.checked) // undo “checked” photos
         }
 
         let insertAt = min(last.indexBefore, assets.count)

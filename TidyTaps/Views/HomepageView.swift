@@ -8,10 +8,8 @@
 import SwiftUI
 
 struct HomepageView: View {
-    // the deleted count in red bubble. for now its test number
 //    @StateObject private var deletedBadge = DeletedBadgeVM()
 
-    
 
     var body: some View {
         NavigationView {
@@ -23,20 +21,20 @@ struct HomepageView: View {
                     // MARK: Logo Header
                     HStack(alignment: .center, spacing: 0) {
                       
-                      // 1) "T i d y" with big tracking
+                      // 1) "T i d y"
                       Text("Tidy")
                         .font(.custom("Poppins-Semibold", size: 45))
                         .tracking(14)          // adds 20pts between every letter
                         .foregroundColor(.black)
                         //.foregroundStyle(.black)
 
-                      // 2) Your logo, rotated/offset to lean into the "aps"
-                      Image("logo")            // or Image(systemName: "hand.tap.fill")
+                      // 2) point logo, rotated/offset to lean into the "aps"
+                      Image("logo")            //
                         .resizable()
                         .scaledToFit()
                         .frame(width: 87, height: 87)
                         .rotationEffect(.degrees(10))   // tilt it toward the right
-                        .offset(x: 2, y:-5)                  // pull it left so it overlaps slightly
+                        .offset(x: 2, y:-5)                  //  left so it overlaps slightly
 
                       // 3) "a p s" with the same tracking
                       Text("aps")
