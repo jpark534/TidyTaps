@@ -33,7 +33,9 @@ struct DeletedView: View {
                 .overlay(                                            // title sits centered over the bar
                     Text("Deleted")
                         .font(.custom("Poppins-Semibold", size: 28))
+                        .foregroundColor(.black)
                         .tracking(8),
+                    
                     alignment: .center
                 )
                 .padding(.horizontal, 16)
@@ -48,12 +50,12 @@ struct DeletedView: View {
                         ForEach(vm.assets, id: \.localIdentifier) { asset in
                             let isSelected = vm.selected == asset.localIdentifier
 
-                            DeletedThumb(asset: asset)                // ⇦ auto-sizes by aspect
+                            DeletedThumb(asset: asset)                //  auto-sizes by aspect
                                 .clipShape(RoundedRectangle(cornerRadius: 14))
                                 .overlay {
                                     if isSelected {
                                         RoundedRectangle(cornerRadius: 14)
-                                            .fill(.ultraThinMaterial) // full-tile blur
+                                            .fill(.ultraThinMaterial) // full-tile (full photo) blur
                                     }
                                 }
                                 .overlay(alignment: .center) {
@@ -84,6 +86,7 @@ struct DeletedView: View {
                             Text("Permanently Delete")
                                 .font(.custom("Poppins-Semibold", size: 18))
                                 .frame(maxWidth: .infinity)
+                                .foregroundColor(.black)
                                 .padding(.vertical, 14)
                                 .background(Color.red.opacity(0.25))
                                 .overlay(
@@ -98,6 +101,7 @@ struct DeletedView: View {
                         Text("Nothing here :p")
                             .font(.custom("Poppins-Regular", size: 16))
                             .padding(.vertical, 24)
+                            .foregroundColor(.black)
                     }
                 }
             }
@@ -108,7 +112,9 @@ struct DeletedView: View {
             Button("No", role: .cancel) { }
             Button("Yes", role: .destructive) { vm.permanentlyDeleteAll() }
         } message: {
-            Text("You cannot undo this action.")
+            Text("You cannot undo this action.\n\nPhotos will go into ‘Recently Deleted’ folder on iPhone.")
+                   .multilineTextAlignment(.leading)
+                   .font(.subheadline)
         }
     }
 }
@@ -141,7 +147,7 @@ final class DeletedViewModel: ObservableObject {
 
     func undo(_ asset: PHAsset) {
         remove(asset: asset, fromAlbum: AppAlbum.deleted) { [weak self] in
-            PhotoLibraryService.remove(asset: asset, fromAlbumTitled: AppAlbum.checked) // ← add this
+            PhotoLibraryService.remove(asset: asset, fromAlbumTitled: AppAlbum.checked)
             guard let self else { return }
             DispatchQueue.main.async {
                 self.assets.removeAll { $0.localIdentifier == asset.localIdentifier }
@@ -215,7 +221,7 @@ private struct DeletedThumb: View {
         .task(id: asset.localIdentifier) {
             let opts = PHImageRequestOptions()
             opts.deliveryMode = .highQualityFormat
-            // pick a reasonable target size for the column width (~300px wide)
+            // target size for column width
             let targetWidth: CGFloat = 600
             let targetSize = CGSize(width: targetWidth, height: targetWidth / aspect)
             PHImageManager.default().requestImage(
