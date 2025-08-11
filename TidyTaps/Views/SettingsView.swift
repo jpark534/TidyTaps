@@ -34,6 +34,7 @@ private struct OrderRow: View {
                     .background(Capsule().fill(Color("Yellow")))
                     .overlay(Capsule().stroke(Color("AccentDark"), lineWidth: 2))
                     .offset(y: 12)
+                    .foregroundColor(.black)
             }
         }
     }
