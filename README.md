@@ -1,7 +1,7 @@
-TidyTaps
+## **TidyTaps**
 
-Had to prep for my 3 concerts next week and realized I had no storage left on my phone for videos.
-Made this because I got tired of scrolling through 16,000 photos in the Photos app.
+Had to prep for my <ins>3 concerts</ins>  next week and realized I had <ins>no storage</ins>  left on my phone for videos.
+Made this because I got tired of scrolling through my 16,000 photos in the Photos app.
 That’s it ;p
 
 What it does:
@@ -13,3 +13,4 @@ What it does:
 - Safe final delete (goes to iOS Photos App 'Recently Deleted')
 
 - All local, all private
+- 
