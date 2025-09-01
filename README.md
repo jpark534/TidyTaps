@@ -13,4 +13,4 @@ What it does:
 - Safe final delete (goes to iOS Photos App 'Recently Deleted')
 
 - All local, all private
-- 
+
