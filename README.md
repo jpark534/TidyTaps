@@ -14,3 +14,4 @@ What it does:
 
 - All local, all private
 
+![tidytapsgif](https://github.com/jpark534/TidyTaps/blob/main/tidytapsgif.gif)
